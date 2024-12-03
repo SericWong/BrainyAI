@@ -15,7 +15,11 @@ import  ChatGPT4Turbo from "~libs/chatbot/openai/ChatGPT4Turbo";
 import {Logger} from "~utils/logger";
 import ChatGPT4O from "~libs/chatbot/openai/ChatGPT4o";
 import ArkoseGlobalSingleton from "~libs/chatbot/openai/Arkose";
-
+import {AiboxBot} from "~libs/chatbot/aibox";
+import { AiboxGPT4oMiniBot } from "~libs/chatbot/aibox/aibox-gpt4omini";
+import { AiboxGPT4oBot } from "~libs/chatbot/aibox/aibox-gpt4o";
+import { AiboxClaude35SonnetBot } from "~libs/chatbot/aibox/aibox-claude35sonnet";
+import { AiboxGeminiProBot } from "~libs/chatbot/aibox/aibox-gemini-pro";
 export type M = (
     typeof ChatGPT35Turbo
     | typeof CopilotBot
@@ -29,7 +33,12 @@ export type M = (
     | typeof Llama3SonarLarge32kOnline
     | typeof ChatGPT4Turbo
     | typeof ChatGPT4O
-    )
+    | typeof AiboxBot
+    | typeof AiboxGPT4oMiniBot
+    | typeof AiboxGPT4oBot
+    | typeof AiboxClaude35SonnetBot
+    | typeof AiboxGeminiProBot
+)
 
 export type Ms = M[]
 
@@ -50,9 +59,9 @@ interface IModelManagementProvider {
 export const ModelManagementContext = createContext({} as IModelManagementProvider);
 
 export default function ModelManagementProvider({children}) {
-    const defaultModels: Ms = [ChatGPT35Turbo, CopilotBot, KimiBot];
+    const defaultModels: Ms = [ChatGPT35Turbo, CopilotBot, KimiBot, AiboxBot];
     const [currentBots, setCurrentBots] = useState<IModelManagementProvider['currentBots']>(defaultModels);
-    const allModels = useRef<Ms>([Llama3SonarLarge32KChat, Llama3SonarLarge32kOnline, Claude3Haiku, ChatGPT35Turbo, ChatGPT4O, ChatGPT4Turbo, CopilotBot, KimiBot, Llama370bInstruct, Gemma7bIt, Llavav1634b, Mistral822b]);
+    const allModels = useRef<Ms>([Llama3SonarLarge32KChat, Llama3SonarLarge32kOnline, Claude3Haiku, ChatGPT35Turbo, ChatGPT4O, ChatGPT4Turbo, CopilotBot, KimiBot,AiboxGPT4oMiniBot,AiboxGPT4oBot,AiboxClaude35SonnetBot,AiboxGeminiProBot, Llama370bInstruct, Gemma7bIt, Llavav1634b, Mistral822b]);
     const storage = new Storage();
     const [isLoaded, setIsLoaded] = useState(false);
     const categoryModels = useRef<CMs>([
@@ -67,6 +76,10 @@ export default function ModelManagementProvider({children}) {
         {
             label: "Moonshot",
             models: [KimiBot]
+        },
+        {
+            label: "AIBox",  // 添加 AIBox 分类
+            models: [AiboxGPT4oMiniBot, AiboxGPT4oBot,AiboxClaude35SonnetBot, AiboxGeminiProBot]
         },
         {
             label: "Perplexity",

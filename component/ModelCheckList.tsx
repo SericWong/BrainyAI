@@ -52,7 +52,10 @@ const ModelItems = ({item}: { item: CMsItem }) => {
 
     const getLoginStatus = async () => {
         const [, isLogin] = await item.models[0].checkIsLogin();
-        Logger.log('login:',item.models[0].botName, isLogin);
+        Logger.log('[ModelItems] checkIsLogin result:', {
+            model: item.models[0].botName,
+            isLogin
+        });
         setIsLogin(isLogin);
     };
 
@@ -114,12 +117,17 @@ const ModelItem = ({model, isLogin, setIsOpenProviderToolTip, getLoginStatus} : 
 
     const getUseStatus = async () => {
         const val = await model.checkModelCanUse();
-        Logger.log('canUse:', model.botName, val);
+        Logger.log('[ModelItem] checkModelCanUse result:', {
+            model: model.botName,
+            canUse: val
+        });
         setModelCanUse(val);
     };
 
     const openLogin = async function (model: M) {
+        Logger.log('[ModelItem] Start login process:', model.botName);
         const r = await new model({globalConversationId: conversationId}).startAuth();
+        Logger.log('[ModelItem] Login result:', r);
 
         if (r) {
             getUseStatus();
@@ -133,7 +141,7 @@ const ModelItem = ({model, isLogin, setIsOpenProviderToolTip, getLoginStatus} : 
         }
 
         if (e.target.checked) {
-            if (currentBots.length >= 3) {
+            if (currentBots.length >= 1) {
                 setCurrentBots([...currentBots.slice(1), model]);
             } else {
                 setCurrentBots([...currentBots, model]);

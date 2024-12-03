@@ -203,6 +203,7 @@ const AIError = memo(function ({model, error, start, setCurrentBotResponseMessag
     }, []);
 
     const openLogin = async function () {
+        console.log('[Debug] globalConversationId:', conversationId);
         const r = await new model({globalConversationId: conversationId}).startAuth();
 
         if (r) {

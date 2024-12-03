@@ -13,6 +13,9 @@ import NewChatIcon from "data-base64:~assets/new_chat.svg";
 import MenuArrowIcon from "data-base64:~assets/menu_arrow.svg";
 import eventBus from "~libs/EventBus";
 import {SidePanelContext} from "~provider/sidepanel/SidePanelProvider";
+import { AiboxBot } from "~libs/chatbot/aibox/index";
+import { AIBoxUser, type AIBoxUserInfo } from "~libs/chatbot/aibox/aiboxUser";
+
 
 export interface IDrawerNaviItem {
     path: PanelRouterPath
@@ -40,6 +43,7 @@ export default function () {
     const [, setTitleImage] = useState<string>();
     const [titleText, setTitleText] = useState<string>();
     const {expandMenu, setExpandMenu} = useContext(SidePanelContext);
+    const [userInfo, setUserInfo] = useState<AIBoxUserInfo | null>(null);
 
     useEffect(() => {
         if(location.pathname.endsWith(PanelRouterPath.CONVERSATION)) {
@@ -54,6 +58,20 @@ export default function () {
     useEffect(() => {
         setOpen(expandMenu);
     }, [expandMenu]);
+
+    useEffect(() => {
+        // 检查用户是否登录并获取用户信息
+        async function fetchUserInfo() {
+            const [, isLoggedIn] = await AiboxBot.checkIsLogin();
+            if (isLoggedIn) {
+                const user = AIBoxUser.getInstance().getUserInfo();
+                setUserInfo(user);
+            }
+            
+        }
+
+        fetchUserInfo();
+    }, []); // 空依赖数组表示只在组件挂载时运行
 
     // const showDrawer = () => {
     //     setOpen(true);
@@ -128,6 +146,23 @@ export default function () {
             {titleText}
         </div>
         <div className='flex justify-end items-center'>
+            {userInfo ? (
+                // 已登录：显示用户头像
+                <img 
+                    src={userInfo.avatar || 'default-avatar.png'} 
+                    alt="User Avatar"
+                    className='w-8 h-8 rounded-full mr-4 cursor-pointer'
+                    onClick={() => window.open("https://chat.aibox365.cn/member")}
+                />
+            ) : (
+                // 未登录：显示登录按钮
+                <button 
+                    onClick={() => window.open("https://chat.aibox365.cn/member")}
+                    className='mr-4 px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm'
+                >
+                    登录
+                </button>
+            )}
             <Tooltip title='New Chat'>
                 {titleText === HTitle.AIChatText && <img  className='w-[22px] mr-4 cursor-pointer' src={NewChatIcon} onClick={newChatClick} alt=""/>}
             </Tooltip>

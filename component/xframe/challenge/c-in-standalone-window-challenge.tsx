@@ -6,6 +6,7 @@ import {
 import {sendToBackground} from "@plasmohq/messaging";
 import {Storage} from "@plasmohq/storage";
 import type {SiteName} from "~provider/sidepanel/SidePanelProvider";
+import { Logger } from "~utils/logger";
 
 export default function CInStandaloneWindowChallenge({verifySuccessValidator, siteName, checkInterval}: {
     verifySuccessValidator(): boolean,
@@ -25,17 +26,28 @@ export default function CInStandaloneWindowChallenge({verifySuccessValidator, si
                     });
                 }
 
-                const windowKey: string = new URLSearchParams(location.search).get(WINDOW_FOR_REMOVE_STORAGE_KEY) ?? '';
+                // 从 chrome.storage.session 获取 windowKey
+                storage.get('temp_window_key').then((windowKeyFromStorage) => {
+                    Logger.log("Window key from storage:", windowKeyFromStorage);
+                    
+                    const windowKeyFromUrl = new URLSearchParams(location.search).get(WINDOW_FOR_REMOVE_STORAGE_KEY);
+                    Logger.log("Window key from URL:", windowKeyFromUrl);
+                    
+                    const windowKey = windowKeyFromStorage || windowKeyFromUrl || '';
+                    Logger.log("Final window key:", windowKey);
 
-                storage.get(windowKey).then((windowId: any) => {
-                    if (windowId) {
-                        void sendToBackground({
-                            name: "close-window",
-                            body: {
-                                windowId
-                            },
-                        });
-                    }
+                    storage.get(windowKey).then((windowId: any) => {
+                        if (windowId) {
+                            void sendToBackground({
+                                name: "close-window",
+                                body: {
+                                    windowId
+                                },
+                            });
+                            // 使用 storage.remove 清理存储
+                            void storage.remove('temp_window_key');
+                        }
+                    });
                 });
             }
         }, checkInterval ?? 200);
